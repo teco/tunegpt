@@ -25,11 +25,11 @@ def parse_playlist(text):
 
 
 # --- PAGE CONFIG ---
-    st.set_page_config(page_title="GPTune – AI Playlist Generator", page_icon="🎵", layout="centered")
+st.set_page_config(page_title="Plailista – AI Playlist Generator", page_icon="🎵", layout="centered")
 
 # --- HEADER ---
-    st.title("🧠🎵 Plailista")
-    st.subheader("Playlists from the Mind, Delivered to Spotify")
+st.title("🧠🎵 Plailista")
+st.subheader("Playlists from the Aether, Delivered to Spotify")
 
 # --- PLACEHOLDER FOR IMAGES ---
 # st.image("logo.png", width=120)
@@ -125,21 +125,73 @@ st.markdown("---")
 st.subheader("🔐 Connect & Create")
 playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
-# Spotify Authentication
-if st.button("Authenticate with Spotify"):
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+# --- SPOTIFY AUTHENTICATION HANDLING ---
+if "sp_oauth" not in st.session_state:
+    st.session_state["sp_oauth"] = SpotifyOAuth(
         client_id=st.secrets["spotify"]["client_id"],
         client_secret=st.secrets["spotify"]["client_secret"],
-        redirect_uri=st.secrets["spotify"]["redirect_uri"],  # use correct URI
+        redirect_uri=st.secrets["spotify"]["redirect_uri"],
         scope="playlist-modify-public"
-    ))
-    # Check if authentication was successful
-    user = sp.current_user()  # This line ensures the user is authenticated
-    st.success(f"🔐 Authenticated as {user['display_name']}")
+    )
 
-# Create playlist after authenticating
-if st.button("➕ Create Playlist on Spotify"):
-    with st.spinner("Creating playlist on Spotify..."):
-        user = sp.current_user()  # Get the current user's info
-        playlist = sp.user_playlist_create(user['id'], playlist_name, public=True)
-        st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
+# Try to get the token from the URL or session state
+code = st.query_params.get("code")
+
+if code:
+    try:
+        token_info = st.session_state["sp_oauth"].get_access_token(code)
+        st.session_state["token_info"] = token_info
+        st.session_state["sp"] = spotipy.Spotify(auth=token_info['access_token'])
+        st.query_params.clear() # Clear the code from the URL
+        st.rerun() # Rerun to remove the code from the URL and update the UI
+    except Exception as e:
+        st.error(f"Error getting Spotify token: {e}")
+        st.session_state["token_info"] = None
+        st.session_state["sp"] = None
+elif "token_info" in st.session_state and st.session_state["sp_oauth"].validate_token(st.session_state["token_info"]):
+    # Token is valid, initialize spotipy with the existing token
+    st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info"]['access_token'])
+else:
+    # No valid token, display authentication button
+    auth_url = st.session_state["sp_oauth"].get_authorize_url()
+    st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
+
+if "sp" in st.session_state and st.session_state["sp"] is not None:
+    try:
+        user = st.session_state["sp"].current_user()
+        st.success(f"🔐 Authenticated as {user['display_name']}")
+        playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
+
+        if st.button("➕ Create Playlist on Spotify"):
+            if "parsed_playlist" not in st.session_state or not st.session_state["parsed_playlist"]:
+                st.warning("Please generate a playlist or paste one above before creating it on Spotify.")
+            else:
+                with st.spinner("Creating playlist on Spotify..."):
+                    try:
+                        user_id = user['id']
+                        playlist = st.session_state["sp"].user_playlist_create(user_id, playlist_name, public=True)
+                        st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
+
+                        track_uris = []
+                        for item in st.session_state["parsed_playlist"]:
+                            search_query = f"track:{item['track']} artist:{item['artist']}"
+                            results = st.session_state["sp"].search(q=search_query, type="track", limit=1)
+                            if results and results['tracks']['items']:
+                                track_uris.append(results['tracks']['items'][0]['uri'])
+                            else:
+                                st.warning(f"Could not find track: {item['artist']} - {item['track']}")
+
+                        if track_uris:
+                            st.session_state["sp"].playlist_add_items(playlist['id'], track_uris)
+                            st.success(f"Added {len(track_uris)} songs to '{playlist_name}'!")
+                        else:
+                            st.warning("No songs were found to add to the playlist.")
+
+                    except Exception as e:
+                        st.error(f"Error creating or adding songs to playlist: {e}")
+    except Exception as e:
+        st.error(f"Error accessing Spotify user information: {e}")
+        st.session_state["token_info"] = None # Invalidate token if there's an error
+        st.session_state["sp"] = None
+else:
+    st.info("Please authenticate with Spotify to create playlists.")
