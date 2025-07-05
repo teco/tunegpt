@@ -73,7 +73,7 @@ if st.button("Generate Playlist 🎶"):
         try:
             client = OpenAI(api_key=st.secrets["openai"]["api_key"])
             client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": prompt}],
     temperature=0.8
             )
