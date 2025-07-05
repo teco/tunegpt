@@ -233,10 +233,6 @@ else:
 
     st.info("Please authenticate with Spotify to fully utilize features.")
     st.markdown(f"""
-        <p>If you weren't automatically redirected, please click the button below to authenticate with Spotify directly.</p>
+        <p>If you weren't automatically redirected, please click <a href="{auth_url}" target="_blank">Open Spotify</a> to authenticate directly.</p>
+        <p style='font-size: small; color: grey;'>This will open in a new tab.</p>
     """, unsafe_allow_html=True)
-
-    # --- NEW "Open Spotify" BUTTON ---
-    if st.button("Open Spotify"):
-        webbrowser.open(auth_url) # This will attempt to open in a new tab
-        st.info("Please complete authentication in the new tab.")
