@@ -128,9 +128,9 @@ playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 # Spotify Authentication
 if st.button("Authenticate with Spotify"):
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=st.secrets["spotify"]["client_id"],
-                                                    client_secret=st.secrets["spotify"]["client_secret"],
-                                                    redirect_uri=st.secrets["spotify"]["redirect_uri"],
-                                                    scope="playlist-modify-public"))
+        client_secret=st.secrets["spotify"]["client_secret"],
+        redirect_uri="https://tunegpt.streamlit.app",  # Hardcoded redirect URI
+        scope="playlist-modify-public"))
     # Check if authentication was successful
     user = sp.current_user()  # This line ensures the user is authenticated
     st.success(f"🔐 Authenticated as {user['display_name']}")
@@ -141,4 +141,3 @@ if st.button("➕ Create Playlist on Spotify"):
         user = sp.current_user()  # Get the current user's info
         playlist = sp.user_playlist_create(user['id'], playlist_name, public=True)
         st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
-
