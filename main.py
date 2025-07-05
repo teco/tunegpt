@@ -1,8 +1,8 @@
-    import streamlit as st
-    from PIL import Image
-    from openai import OpenAI
-    import os
-    import time
+import streamlit as st
+from PIL import Image
+from openai import OpenAI
+import os
+import time
 
 
     def parse_playlist(text):
