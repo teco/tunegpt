@@ -42,12 +42,23 @@ with col2:
     num_songs = st.slider("Number of Songs", 10, 30, 20)
 
 if st.button("Generate Playlist 🎶"):
-    st.info("This would call ChatGPT API to generate playlist JSON (simulated here).")
+    fake_playlist = """Lucinda Williams – Drunken Angel
+Waylon Jennings – Honky Tonk Heroes
+Townes Van Zandt – Pancho and Lefty
+Steve Earle – Copperhead Road
+Ray Wylie Hubbard – Snake Farm
+"""
+    st.session_state["generated_playlist"] = fake_playlist
+    st.success("✅ Playlist generated!")
 
 # --- OR MANUAL INPUT ---
 st.markdown("---")
 st.subheader("📋 Paste Your Own Playlist")
-playlist_input = st.text_area("Format: Artist – Track", height=200)
+playlist_input = st.text_area(
+    "Format: Artist – Track",
+    value=st.session_state.get("generated_playlist", ""),
+    height=200
+)
 
 # --- AUTH & PLAYLIST CREATION ---
 st.markdown("---")
@@ -55,7 +66,10 @@ st.subheader("🔐 Connect & Create")
 playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
 if st.button("Authenticate with Spotify"):
-    st.success("Spotify OAuth flow would be initiated here.")
+    st.success("🔐 Authenticated as user123 (fake-token-xyz)")
 
 if st.button("➕ Create Playlist on Spotify"):
-    st.success("Tracks would be added to a new playlist via the Spotify API.")
+    with st.spinner("Creating playlist on Spotify..."):
+        import time
+        time.sleep(2)
+    st.success("🎉 Playlist 'Outlaw Starter Pack' created successfully!")
