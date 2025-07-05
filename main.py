@@ -149,7 +149,7 @@ if code:
 elif "token_info" in st.session_state:
     is_token_valid = st.session_state["sp_oauth"].validate_token(st.session_state["token_info"])
     if is_token_valid:
-        st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info']["access_token"])
+        st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info"]["access_token"])
     else:
         auth_url = st.session_state["sp_oauth"].get_authorize_url()
         st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
