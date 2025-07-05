@@ -124,6 +124,9 @@ playlist_input = st.text_area(
 st.markdown("---")
 st.subheader("🔐 Connect & Create")
 
+# --- PLAYLIST NAME INPUT (ALWAYS VISIBLE) ---
+playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack") # This is now always visible
+
 # --- SPOTIFY AUTHENTICATION HANDLING ---
 if "sp_oauth" not in st.session_state:
     st.session_state["sp_oauth"] = SpotifyOAuth(
@@ -150,56 +153,78 @@ elif "token_info" in st.session_state:
     is_token_valid = st.session_state["sp_oauth"].validate_token(st.session_state["token_info"])
     if is_token_valid:
         st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info"]["access_token"])
+        st.success(f"🔐 Authenticated as {st.session_state['sp'].current_user()['display_name']}") # Show success immediately
     else:
+        # Display the AUTHENTICATE BUTTON when token is invalid/expired
         auth_url = st.session_state["sp_oauth"].get_authorize_url()
-        st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
+        if st.button("🔐 Authenticate with Spotify"): # <<< The button element
+            st.webbrowser.open(auth_url) # Open the URL in a new browser tab/window
+            st.info("Please complete authentication in the new tab.") # Optional info message
 else:
+    # Display the AUTHENTICATE BUTTON when no token info is present
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
-    st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
+    if st.button("🔐 Authenticate with Spotify"): # <<< The button element
+        st.webbrowser.open(auth_url) # Open the URL in a new browser tab/window
+        st.info("Please complete authentication in the new tab.") # Optional info message
 
 
-# The rest of your code that checks if "sp" is in session and displays playlist creation options
+# --- CREATE PLAYLIST ON SPOTIFY BUTTON (ALWAYS VISIBLE, BUT WILL ERROR IF NOT AUTHENTICATED) ---
+# This entire block is now outside the "if sp in st.session_state" check.
+# Clicking this when not authenticated will indeed raise an error as requested.
+if st.button("➕ Create Playlist on Spotify"):
+    if "parsed_playlist" not in st.session_state or not st.session_state["parsed_playlist"]:
+        st.warning("Please generate a playlist or paste one above before creating it on Spotify.")
+    else:
+        with st.spinner("Creating playlist on Spotify..."):
+            try:
+                # --- THIS IS WHERE THE ERROR WILL OCCUR IF NOT AUTHENTICATED ---
+                # st.session_state["sp"] will be None or not exist, causing an error
+                user = st.session_state["sp"].current_user() # This line will fail if not authenticated
+                user_id = user['id']
+                playlist = st.session_state["sp"].user_playlist_create(user_id, playlist_name, public=True)
+                st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
+
+                track_uris = []
+                for item in st.session_state["parsed_playlist"]:
+                    search_query = f"track:{item['track']} artist:{item['artist']}"
+                    results = st.session_state["sp"].search(q=search_query, type="track", limit=1)
+                    if results and results['tracks']['items']:
+                        track_uris.append(results['tracks']['items'][0]['uri'])
+                    else:
+                        st.warning(f"Could not find track: {item['artist']} - {item['track']}")
+
+                if track_uris:
+                    chunk_size = 100
+                    for i in range(0, len(track_uris), chunk_size):
+                        chunk = track_uris[i:i + chunk_size]
+                        st.session_state["sp"].playlist_add_items(playlist['id'], chunk)
+                    st.success(f"Added {len(track_uris)} songs to '{playlist_name}'!")
+                else:
+                    st.warning("No songs were found to add to the playlist.")
+
+            except Exception as e:
+                # This catches the error if you click the button when not authenticated
+                st.error(f"Error creating playlist: {e}. Please ensure you are authenticated with Spotify.")
+                # You might want to also re-display the auth button here if an error occurs
+                if "sp" not in st.session_state or st.session_state["sp"] is None:
+                    auth_url = st.session_state["sp_oauth"].get_authorize_url()
+                    if st.button("🔐 Authenticate with Spotify (after error)"):
+                         st.webbrowser.open(auth_url)
+                         st.info("Please complete authentication in the new tab.")
+
+
+# --- Authentication status message (re-added for clarity, replaces the final else block) ---
+# This message will dynamically appear/disappear based on auth status
 if "sp" in st.session_state and st.session_state["sp"] is not None:
     try:
-        user = st.session_state["sp"].current_user()
-        st.success(f"🔐 Authenticated as {user['display_name']}")
-        # --- MOVE THE PLAYLIST_NAME INPUT HERE ---
-        playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
-
-        if st.button("➕ Create Playlist on Spotify"):
-            if "parsed_playlist" not in st.session_state or not st.session_state["parsed_playlist"]:
-                st.warning("Please generate a playlist or paste one above before creating it on Spotify.")
-            else:
-                with st.spinner("Creating playlist on Spotify..."):
-                    try:
-                        user_id = user['id']
-                        playlist = st.session_state["sp"].user_playlist_create(user_id, playlist_name, public=True)
-                        st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
-
-                        track_uris = []
-                        for item in st.session_state["parsed_playlist"]:
-                            search_query = f"track:{item['track']} artist:{item['artist']}"
-                            results = st.session_state["sp"].search(q=search_query, type="track", limit=1)
-                            if results and results['tracks']['items']:
-                                track_uris.append(results['tracks']['items'][0]['uri'])
-                            else:
-                                st.warning(f"Could not find track: {item['artist']} - {item['track']}")
-
-                        if track_uris:
-                            chunk_size = 100
-                            for i in range(0, len(track_uris), chunk_size):
-                                chunk = track_uris[i:i + chunk_size]
-                                st.session_state["sp"].playlist_add_items(playlist['id'], chunk)
-                            st.success(f"Added {len(track_uris)} songs to '{playlist_name}'!")
-                        else:
-                            st.warning("No songs were found to add to the playlist.")
-
-                    except Exception as e:
-                        st.error(f"Error creating or adding songs to playlist: {e}")
+        # Check if user object is still valid
+        user_display_name = st.session_state["sp"].current_user()['display_name']
+        st.success(f"🔐 Authenticated as {user_display_name}")
     except Exception as e:
-        st.error(f"Error accessing Spotify user information (likely expired token): {e}")
+        # If user data cannot be retrieved, token might be expired/invalid
+        st.error(f"Authentication session expired or invalid. Please re-authenticate: {e}")
         st.session_state["token_info"] = None
         st.session_state["sp"] = None
         st.rerun()
 else:
-    st.info("Please authenticate with Spotify to create playlists.")
+    st.info("Please authenticate with Spotify to fully utilize features.")
