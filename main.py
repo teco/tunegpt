@@ -79,10 +79,8 @@ if st.button("Generate Playlist 🎶"):
         )
         output = response.choices[0].message.content
         parsed = parse_playlist(output)
-
         st.session_state["generated_playlist"] = output
         st.session_state["parsed_playlist"] = parsed
-
         st.success("✅ Playlist generated!")
     except Exception as e:
         st.error(f"OpenAI error: {str(e)}")
