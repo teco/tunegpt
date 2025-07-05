@@ -72,10 +72,10 @@ if st.button("Generate Playlist 🎶"):
     with st.spinner("🎧 Generating playlist..."):
         try:
             client = OpenAI(api_key=st.secrets["openai"]["api_key"])
-            response = openai.ChatCompletion.create(
-                model="gpt-4",  # or gpt-3.5-turbo
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.8
+            client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0.8
             )
             output = response["choices"][0]["message"]["content"]
             parsed = parse_playlist(output)
