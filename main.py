@@ -228,4 +228,13 @@ if "sp" in st.session_state and st.session_state["sp"] is not None:
         st.session_state["sp"] = None
         st.rerun()
 else:
-    st.info("Please authenticate with Spotify to fully utilize features.")
+    # This is the final authentication message at the bottom of the UI
+    # Ensure auth_url is available here (it should be, from the block above)
+    auth_url = st.session_state["sp_oauth"].get_authorize_url()
+    st.info(f"""
+        Please authenticate with Spotify to fully utilize features.
+        <br>
+        <a href="{auth_url}" target="_blank">Click here to authenticate with Spotify directly</a>.
+        <br>
+        <small>This will open in a new tab.</small>
+    """, unsafe_allow_html=True)
