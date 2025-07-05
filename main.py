@@ -1,6 +1,6 @@
 import streamlit as st
 from PIL import Image
-import openai
+from openai import OpenAI
 import os
 import time
 
@@ -71,6 +71,7 @@ if st.button("Generate Playlist 🎶"):
 
     with st.spinner("🎧 Generating playlist..."):
         try:
+            client = OpenAI(api_key=st.secrets["openai"]["api_key"])
             response = openai.ChatCompletion.create(
                 model="gpt-4",  # or gpt-3.5-turbo
                 messages=[{"role": "user", "content": prompt}],
