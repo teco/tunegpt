@@ -118,9 +118,9 @@ playlist_input = st.text_area(
 
 
 # --- AUTH & PLAYLIST CREATION ---
-    st.markdown("---")
-    st.subheader("🔐 Connect & Create")
-    playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
+st.markdown("---")
+st.subheader("🔐 Connect & Create")
+playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
 if st.button("Authenticate with Spotify"):
     st.success("🔐 Authenticated as user123 (fake-token-xyz)")
