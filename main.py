@@ -5,7 +5,7 @@ import os
 import time
 
 
-    def parse_playlist(text):
+def parse_playlist(text):
         parsed = []
         lines = text.strip().splitlines()
     for line in lines:
