@@ -5,20 +5,20 @@ import os
 import time
 
 
-def parse_playlist(text):
-    parsed = []
-    lines = text.strip().splitlines()
-for line in lines:
-if "–" in line:  # en dash
-    parts = line.split("–", 1)
-elif "-" in line:  # fallback
-    parts = line.split("-", 1)
-else:
-continue
-    artist = parts[0].strip()
-    track = parts[1].strip()
-    parsed.append({"artist": artist, "track": track})
-return parsed
+    def parse_playlist(text):
+        parsed = []
+        lines = text.strip().splitlines()
+    for line in lines:
+    if "–" in line:  # en dash
+        parts = line.split("–", 1)
+    elif "-" in line:  # fallback
+        parts = line.split("-", 1)
+    else:
+    continue
+        artist = parts[0].strip()
+        track = parts[1].strip()
+        parsed.append({"artist": artist, "track": track})
+    return parsed
 
 
 # --- PAGE CONFIG ---
