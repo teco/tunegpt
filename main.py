@@ -5,89 +5,89 @@ import os
 import time
 
 
-    def parse_playlist(text):
-        parsed = []
-        lines = text.strip().splitlines()
-        for line in lines:
-            if "–" in line:  # en dash
-                parts = line.split("–", 1)
-            elif "-" in line:  # fallback
-                parts = line.split("-", 1)
-            else:
-                continue
-            artist = parts[0].strip()
-            track = parts[1].strip()
-            parsed.append({"artist": artist, "track": track})
-        return parsed
+def parse_playlist(text):
+    parsed = []
+    lines = text.strip().splitlines()
+for line in lines:
+if "–" in line:  # en dash
+    parts = line.split("–", 1)
+elif "-" in line:  # fallback
+    parts = line.split("-", 1)
+else:
+continue
+    artist = parts[0].strip()
+    track = parts[1].strip()
+    parsed.append({"artist": artist, "track": track})
+return parsed
 
 
-    # --- PAGE CONFIG ---
+# --- PAGE CONFIG ---
     st.set_page_config(page_title="GPTune – AI Playlist Generator", page_icon="🎵", layout="centered")
 
-    # --- HEADER ---
+# --- HEADER ---
     st.title("🧠🎵 Plailista")
     st.subheader("Playlists from the Mind, Delivered to Spotify")
 
-    # --- PLACEHOLDER FOR IMAGES ---
-    # st.image("logo.png", width=120)
-    # st.image("einstein_dancing.gif", width=300)
+# --- PLACEHOLDER FOR IMAGES ---
+# st.image("logo.png", width=120)
+# st.image("einstein_dancing.gif", width=300)
 
-    # --- INFO SECTION ---
-    with st.expander("ℹ️ What’s This?", expanded=True):
-        st.markdown("""
-        **Plailista** is a simple tool that lets you generate Spotify playlists using the power of AI.  
-        Describe your mood, vibe, or favorite artist, and it’ll spin up a playlist and send it directly to your Spotify account.
+# --- INFO SECTION ---
+with st.expander("ℹ️ What’s This?", expanded=True):
+    st.markdown("""
+**Plailista** is a simple tool that lets you generate Spotify playlists using the power of AI.  
+Describe your mood, vibe, or favorite artist, and it’ll spin up a playlist and send it directly to your Spotify account.
 
-        **How to Use**  
-        1. Select your vibe or paste a list  
-        2. Log in to your Spotify account  
-        3. Hit “Create Playlist” — and done
+**How to Use**  
+1. Select your vibe or paste a list  
+2. Log in to your Spotify account  
+3. Hit “Create Playlist” — and done
 
-        ---
-        **Note from the Creator**  
-        This is a weekend project built by Terence Reis. Hope you’ll enjoy it.  
-        _If you don’t… well, did you catch the part about it being a weekend project?_ 😅
-        """)
+---
+**Note from the Creator**  
+This is a weekend project built by Terence Reis. Hope you’ll enjoy it.  
+_If you don’t… well, did you catch the part about it being a weekend project?_ 😅
+""")
 
-    # --- PROMPT BUILDER ---
+# --- PROMPT BUILDER ---
     st.header("🎶 Generate a Playlist")
     col1, col2 = st.columns(2)
 
-    with col1:
-        mood = st.selectbox("Mood", ["Gritty", "Melancholic", "Upbeat", "Chill"])
-        genre = st.selectbox("Genre", ["Outlaw Country", "Indie Rock", "Jazz", "Ambient"])
+with col1:
+    mood = st.selectbox("Mood", ["Gritty", "Melancholic", "Upbeat", "Chill"])
+    genre = st.selectbox("Genre", ["Outlaw Country", "Indie Rock", "Jazz", "Ambient"])
 
-    with col2:
-        artist = st.text_input("Anchor Artist", "Lucinda Williams")
-        num_songs = st.slider("Number of Songs", 10, 30, 20)
+with col2:
+    artist = st.text_input("Anchor Artist", "Lucinda Williams")
+    num_songs = st.slider("Number of Songs", 10, 30, 20)
 
-    if st.button("Generate Playlist 🎶"):
-        prompt = f"""
-        Generate a {num_songs}-track playlist in the genre of {genre}, with a {mood} vibe, inspired by the style of {artist}.
-        Format it as one line per song, in this format:
-        Artist – Track Title
-        Only include real songs and artists.
-        """
+if st.button("Generate Playlist 🎶"):
+    prompt = f"""
+Generate a {num_songs}-track playlist in the genre of {genre}, with a {mood} vibe, inspired by the style of {artist}.
+Format it as one line per song, in this format:
+Artist – Track Title
+Only include real songs and artists.
+"""
 
-        with st.spinner("🎧 Generating playlist..."):
-        try:
-            client = OpenAI(api_key=st.secrets["openai"]["api_key"])
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.8
-            )
-            output = response.choices[0].message.content
-            parsed = parse_playlist(output)
-            st.session_state["generated_playlist"] = output
-            st.session_state["parsed_playlist"] = parsed
-            st.success("✅ Playlist generated!")
-        except Exception as e:
-            st.error(f"OpenAI error: {str(e)}")
+with st.spinner("🎧 Generating playlist..."):
+try:
+    client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+    response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0.8
+)
+    output = response.choices[0].message.content
+    parsed = parse_playlist(output)
+    st.session_state["generated_playlist"] = output
+    st.session_state["parsed_playlist"] = parsed
+    st.success("✅ Playlist generated!")
+except Exception as e:
+    st.error(f"OpenAI error: {str(e)}")
 
-                
 
-    # --- OR MANUAL INPUT ---
+
+# --- OR MANUAL INPUT ---
     st.markdown("---")
     st.subheader("📋 Paste Your Own Playlist (or edit the example)")
 
@@ -98,26 +98,26 @@ import time
     Ray Wylie Hubbard – Snake Farm"""
 
     playlist_input = st.text_area(
-        "Format: Artist – Track",
-        value=st.session_state.get("generated_playlist", default_example),
-        height=200
-    )
+    "Format: Artist – Track",
+    value=st.session_state.get("generated_playlist", default_example),
+    height=200
+)
 
-    if "parsed_playlist" in st.session_state:
-        st.subheader("🔍 Parsed Playlist (Structured)")
-        st.json(st.session_state["parsed_playlist"])
+if "parsed_playlist" in st.session_state:
+    st.subheader("🔍 Parsed Playlist (Structured)")
+    st.json(st.session_state["parsed_playlist"])
 
 
-    # --- AUTH & PLAYLIST CREATION ---
+# --- AUTH & PLAYLIST CREATION ---
     st.markdown("---")
     st.subheader("🔐 Connect & Create")
     playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
-    if st.button("Authenticate with Spotify"):
-        st.success("🔐 Authenticated as user123 (fake-token-xyz)")
+if st.button("Authenticate with Spotify"):
+    st.success("🔐 Authenticated as user123 (fake-token-xyz)")
 
-    if st.button("➕ Create Playlist on Spotify"):
-        with st.spinner("Creating playlist on Spotify..."):
-            import time
-            time.sleep(2)
-        st.success("🎉 Playlist 'Outlaw Starter Pack' created successfully!")
+if st.button("➕ Create Playlist on Spotify"):
+with st.spinner("Creating playlist on Spotify..."):
+import time
+    time.sleep(2)
+    st.success("🎉 Playlist 'Outlaw Starter Pack' created successfully!")
