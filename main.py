@@ -70,20 +70,21 @@ Only include real songs and artists.
 """
 
 with st.spinner("🎧 Generating playlist..."):
-try:
-    client = OpenAI(api_key=st.secrets["openai"]["api_key"])
-    response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[{"role": "user", "content": prompt}],
-    temperature=0.8
+    try:
+        client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.8
 )
-    output = response.choices[0].message.content
-    parsed = parse_playlist(output)
-    st.session_state["generated_playlist"] = output
-    st.session_state["parsed_playlist"] = parsed
-    st.success("✅ Playlist generated!")
-except Exception as e:
-    st.error(f"OpenAI error: {str(e)}")
+        output = response.choices[0].message.content
+        parsed = parse_playlist(output)
+        st.session_state["generated_playlist"] = output
+        st.session_state["parsed_playlist"] = parsed
+    
+        st.success("✅ Playlist generated!")
+    except Exception as e:
+        st.error(f"OpenAI error: {str(e)}")
 
 
 
