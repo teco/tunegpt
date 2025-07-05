@@ -96,24 +96,25 @@ if st.button("Generate Playlist 🎶"):
 
 
 # --- OR MANUAL INPUT ---
-    st.markdown("---")
-    st.subheader("📋 Paste Your Own Playlist (or edit the example)")
+st.markdown("---")
+st.subheader("📋 Paste Your Own Playlist (or edit the example)")
 
-    default_example = """Lucinda Williams – Drunken Angel
-    Waylon Jennings – Honky Tonk Heroes
-    Townes Van Zandt – Pancho and Lefty
-    Cowboy Junkies – Misguided Angel
-    Ray Wylie Hubbard – Snake Farm"""
+default_example = """Lucinda Williams – Drunken Angel
+Waylon Jennings – Honky Tonk Heroes
+Townes Van Zandt – Pancho and Lefty
+Cowboy Junkies – Misguided Angel
+Ray Wylie Hubbard – Snake Farm"""
 
-    playlist_input = st.text_area(
+playlist_input = st.text_area(
     "Format: Artist – Track",
     value=st.session_state.get("generated_playlist", default_example),
     height=200
 )
 
-if "parsed_playlist" in st.session_state:
-    st.subheader("🔍 Parsed Playlist (Structured)")
-    st.json(st.session_state["parsed_playlist"])
+
+# ---if "parsed_playlist" in st.session_state:
+   # st.subheader("🔍 Parsed Playlist (Structured)")
+   # st.json(st.session_state["parsed_playlist"]) 
 
 
 # --- AUTH & PLAYLIST CREATION ---
