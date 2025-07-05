@@ -159,13 +159,13 @@ elif "token_info" in st.session_state:
         # Display the AUTHENTICATE BUTTON when token is invalid/expired
         auth_url = st.session_state["sp_oauth"].get_authorize_url()
         if st.button("🔐 Authenticate with Spotify"): # <<< The button element
-            st.webbrowser.open(auth_url) # Open the URL in a new browser tab/window
+            webbrowser.open(auth_url) # Open the URL in a new browser tab/window
             st.info("Please complete authentication in the new tab.") # Optional info message
 else:
     # Display the AUTHENTICATE BUTTON when no token info is present
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
     if st.button("🔐 Authenticate with Spotify"): # <<< The button element
-        st.webbrowser.open(auth_url) # Open the URL in a new browser tab/window
+        webbrowser.open(auth_url) # Open the URL in a new browser tab/window
         st.info("Please complete authentication in the new tab.") # Optional info message
 
 
@@ -210,7 +210,7 @@ if st.button("➕ Create Playlist on Spotify"):
                 if "sp" not in st.session_state or st.session_state["sp"] is None:
                     auth_url = st.session_state["sp_oauth"].get_authorize_url()
                     if st.button("🔐 Authenticate with Spotify (after error)"):
-                         st.webbrowser.open(auth_url)
+                         webbrowser.open(auth_url)
                          st.info("Please complete authentication in the new tab.")
 
 
