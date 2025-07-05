@@ -135,6 +135,15 @@ if "sp_oauth" not in st.session_state:
         scope="playlist-modify-public"
     )
 
+# ADD THESE DEBUG LINES:
+    st.write(f"DEBUG: Initialized SpotifyOAuth with client_id: {st.session_state['sp_oauth'].client_id}")
+    st.write(f"DEBUG: Initialized SpotifyOAuth with redirect_uri: {st.session_state['sp_oauth'].redirect_uri}")
+
+# ADD THESE LINES TO CHECK SECRETS
+st.write(f"DEBUG: Client ID from secrets: {st.secrets['spotify']['client_id']}")
+st.write(f"DEBUG: Redirect URI from secrets: {st.secrets['spotify']['redirect_uri']}")
+# DO NOT print client_secret for security reasons in a public app.
+
 code = st.query_params.get("code")
 st.write(f"DEBUG: 'code' from query params: {code}")
 
