@@ -118,7 +118,6 @@ if st.button("Authenticate with Spotify"):
     st.success("🔐 Authenticated as user123 (fake-token-xyz)")
 
 if st.button("➕ Create Playlist on Spotify"):
-with st.spinner("Creating playlist on Spotify..."):
-import time
-    time.sleep(2)
+    with st.spinner("Creating playlist on Spotify..."):
+        time.sleep(2)
     st.success("🎉 Playlist 'Outlaw Starter Pack' created successfully!")
