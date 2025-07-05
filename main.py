@@ -1,11 +1,31 @@
 import streamlit as st
 from PIL import Image
+import openai
+import os
+import time
+
+
+def parse_playlist(text):
+    parsed = []
+    lines = text.strip().splitlines()
+    for line in lines:
+        if "–" in line:  # en dash
+            parts = line.split("–", 1)
+        elif "-" in line:  # fallback
+            parts = line.split("-", 1)
+        else:
+            continue
+        artist = parts[0].strip()
+        track = parts[1].strip()
+        parsed.append({"artist": artist, "track": track})
+    return parsed
+
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="GPTune – AI Playlist Generator", page_icon="🎵", layout="centered")
 
 # --- HEADER ---
-st.title("🧠🎵 GPTune")
+st.title("🧠🎵 Plailista")
 st.subheader("Playlists from the Mind, Delivered to Spotify")
 
 # --- PLACEHOLDER FOR IMAGES ---
@@ -15,7 +35,7 @@ st.subheader("Playlists from the Mind, Delivered to Spotify")
 # --- INFO SECTION ---
 with st.expander("ℹ️ What’s This?", expanded=True):
     st.markdown("""
-    **GPTune** is a simple tool that lets you generate Spotify playlists using the power of AI.  
+    **Plailista** is a simple tool that lets you generate Spotify playlists using the power of AI.  
     Describe your mood, vibe, or favorite artist, and it’ll spin up a playlist and send it directly to your Spotify account.
 
     **How to Use**  
@@ -42,23 +62,51 @@ with col2:
     num_songs = st.slider("Number of Songs", 10, 30, 20)
 
 if st.button("Generate Playlist 🎶"):
-    fake_playlist = """Lucinda Williams – Drunken Angel
-Waylon Jennings – Honky Tonk Heroes
-Townes Van Zandt – Pancho and Lefty
-Steve Earle – Copperhead Road
-Ray Wylie Hubbard – Snake Farm
-"""
-    st.session_state["generated_playlist"] = fake_playlist
-    st.success("✅ Playlist generated!")
+    prompt = f"""
+    Generate a {num_songs}-track playlist in the genre of {genre}, with a {mood} vibe, inspired by the style of {artist}.
+    Format it as one line per song, in this format:
+    Artist – Track Title
+    Only include real songs and artists.
+    """
+
+    with st.spinner("🎧 Generating playlist..."):
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",  # or gpt-3.5-turbo
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.8
+            )
+            output = response["choices"][0]["message"]["content"]
+            parsed = parse_playlist(output)
+
+            st.session_state["generated_playlist"] = output
+            st.session_state["parsed_playlist"] = parsed
+
+            st.success("✅ Playlist generated!")
+        except Exception as e:
+            st.error(f"OpenAI error: {str(e)}")
+            
 
 # --- OR MANUAL INPUT ---
 st.markdown("---")
-st.subheader("📋 Paste Your Own Playlist")
+st.subheader("📋 Paste Your Own Playlist (or edit the example)")
+
+default_example = """Lucinda Williams – Drunken Angel
+Waylon Jennings – Honky Tonk Heroes
+Townes Van Zandt – Pancho and Lefty
+Cowboy Junkies – Misguided Angel
+Ray Wylie Hubbard – Snake Farm"""
+
 playlist_input = st.text_area(
     "Format: Artist – Track",
-    value=st.session_state.get("generated_playlist", ""),
+    value=st.session_state.get("generated_playlist", default_example),
     height=200
 )
+
+if "parsed_playlist" in st.session_state:
+    st.subheader("🔍 Parsed Playlist (Structured)")
+    st.json(st.session_state["parsed_playlist"])
+
 
 # --- AUTH & PLAYLIST CREATION ---
 st.markdown("---")
