@@ -63,28 +63,35 @@ with col2:
 
 if st.button("Generate Playlist 🎶"):
     prompt = f"""
-Generate a {num_songs}-track playlist in the genre of {genre}, with a {mood} vibe, inspired by the style of {artist}.
-Format it as one line per song, in this format:
-Artist – Track Title
-Only include real songs and artists.
-"""
+    Generate a {num_songs}-track playlist in the genre of {genre}, with a {mood} vibe, inspired by the style of {artist}.
+    Format it as one line per song in this format: Artist – Track Title
+    Only include real songs and artists.
 
-with st.spinner("🎧 Generating playlist..."):
-    try:
-        client = OpenAI(api_key=st.secrets["openai"]["api_key"])
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.8
-)
-        output = response.choices[0].message.content
-        parsed = parse_playlist(output)
-        st.session_state["generated_playlist"] = output
-        st.session_state["parsed_playlist"] = parsed
-    
-        st.success("✅ Playlist generated!")
-    except Exception as e:
-        st.error(f"OpenAI error: {str(e)}")
+    Here are a few examples:
+    Lucinda Williams – Drunken Angel  
+    Waylon Jennings – Honky Tonk Heroes  
+    Townes Van Zandt – Pancho and Lefty  
+    Cowboy Junkies – Misguided Angel  
+    Ray Wylie Hubbard – Snake Farm  
+    """
+
+    with st.spinner("🎧 Generating playlist..."):
+        try:
+            client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.8
+            )
+            output = response.choices[0].message.content
+            parsed = parse_playlist(output)
+
+            st.session_state["generated_playlist"] = output
+            st.session_state["parsed_playlist"] = parsed
+
+            st.success("✅ Playlist generated!")
+        except Exception as e:
+            st.error(f"OpenAI error: {str(e)}")
 
 
 
