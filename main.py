@@ -126,6 +126,7 @@ st.subheader("🔐 Connect & Create")
 playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
 # --- SPOTIFY AUTHENTICATION HANDLING ---
+# This is where you insert the new code block you provided.
 if "sp_oauth" not in st.session_state:
     st.session_state["sp_oauth"] = SpotifyOAuth(
         client_id=st.secrets["spotify"]["client_id"],
@@ -134,10 +135,11 @@ if "sp_oauth" not in st.session_state:
         scope="playlist-modify-public"
     )
 
-# Try to get the token from the URL or session state
 code = st.query_params.get("code")
+st.write(f"DEBUG: 'code' from query params: {code}")
 
 if code:
+    st.write("DEBUG: Handling code from Spotify redirect.")
     try:
         token_info = st.session_state["sp_oauth"].get_access_token(code)
         st.session_state["token_info"] = token_info
@@ -148,14 +150,26 @@ if code:
         st.error(f"Error getting Spotify token: {e}")
         st.session_state["token_info"] = None
         st.session_state["sp"] = None
-elif "token_info" in st.session_state and st.session_state["sp_oauth"].validate_token(st.session_state["token_info"]):
-    # Token is valid, initialize spotipy with the existing token
-    st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info"]['access_token'])
+elif "token_info" in st.session_state:
+    st.write(f"DEBUG: 'token_info' found in session state.")
+    is_token_valid = st.session_state["sp_oauth"].validate_token(st.session_state["token_info"])
+    st.write(f"DEBUG: Is token valid? {is_token_valid}")
+    if is_token_valid:
+        st.write("DEBUG: Token is valid, initializing Spotify client.")
+        st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info"]['access_token'])
+    else:
+        st.write("DEBUG: Token invalid or expired, showing auth link.")
+        auth_url = st.session_state["sp_oauth"].get_authorize_url()
+        st.write(f"DEBUG: Generated Auth URL: {auth_url}")
+        st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
 else:
-    # No valid token, display authentication button
+    st.write("DEBUG: No token info in session, showing auth link.")
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
+    st.write(f"DEBUG: Generated Auth URL: {auth_url}")
     st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
 
+
+# The rest of your code that checks if "sp" is in session and displays playlist creation options
 if "sp" in st.session_state and st.session_state["sp"] is not None:
     try:
         user = st.session_state["sp"].current_user()
@@ -182,7 +196,12 @@ if "sp" in st.session_state and st.session_state["sp"] is not None:
                                 st.warning(f"Could not find track: {item['artist']} - {item['track']}")
 
                         if track_uris:
-                            st.session_state["sp"].playlist_add_items(playlist['id'], track_uris)
+                            # Spotify's add_items has a limit, typically 100 per request
+                            # If you have many songs, you might need to chunk this
+                            chunk_size = 100
+                            for i in range(0, len(track_uris), chunk_size):
+                                chunk = track_uris[i:i + chunk_size]
+                                st.session_state["sp"].playlist_add_items(playlist['id'], chunk)
                             st.success(f"Added {len(track_uris)} songs to '{playlist_name}'!")
                         else:
                             st.warning("No songs were found to add to the playlist.")
@@ -190,8 +209,10 @@ if "sp" in st.session_state and st.session_state["sp"] is not None:
                     except Exception as e:
                         st.error(f"Error creating or adding songs to playlist: {e}")
     except Exception as e:
-        st.error(f"Error accessing Spotify user information: {e}")
-        st.session_state["token_info"] = None # Invalidate token if there's an error
+        st.error(f"Error accessing Spotify user information (likely expired token): {e}")
+        # If current_user() fails, it often means the token is bad. Invalidate it.
+        st.session_state["token_info"] = None
         st.session_state["sp"] = None
+        st.rerun() # Rerun to show auth link again
 else:
     st.info("Please authenticate with Spotify to create playlists.")
