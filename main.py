@@ -231,9 +231,10 @@ else:
     # This is the final authentication message at the bottom of the UI
     # Ensure auth_url is available here (it should be, from the block above)
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
-    st.info(f"""
-        Please authenticate with Spotify to fully utilize features.
-        <br>
+
+    # Use st.markdown for the HTML link, and st.info for the wrapper box
+    st.info("Please authenticate with Spotify to fully utilize features.")
+    st.markdown(f"""
         <a href="{auth_url}" target="_blank">Click here to authenticate with Spotify directly</a>.
         <br>
         <small>This will open in a new tab.</small>
