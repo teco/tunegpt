@@ -135,20 +135,9 @@ if "sp_oauth" not in st.session_state:
         scope="playlist-modify-public"
     )
 
-# ADD THESE DEBUG LINES:
-    st.write(f"DEBUG: Initialized SpotifyOAuth with client_id: {st.session_state['sp_oauth'].client_id}")
-    st.write(f"DEBUG: Initialized SpotifyOAuth with redirect_uri: {st.session_state['sp_oauth'].redirect_uri}")
-
-# ADD THESE LINES TO CHECK SECRETS
-st.write(f"DEBUG: Client ID from secrets: {st.secrets['spotify']['client_id']}")
-st.write(f"DEBUG: Redirect URI from secrets: {st.secrets['spotify']['redirect_uri']}")
-# DO NOT print client_secret for security reasons in a public app.
-
 code = st.query_params.get("code")
-st.write(f"DEBUG: 'code' from query params: {code}")
 
 if code:
-    st.write("DEBUG: Handling code from Spotify redirect.")
     try:
         token_info = st.session_state["sp_oauth"].get_access_token(code)
         st.session_state["token_info"] = token_info
@@ -160,21 +149,14 @@ if code:
         st.session_state["token_info"] = None
         st.session_state["sp"] = None
 elif "token_info" in st.session_state:
-    st.write(f"DEBUG: 'token_info' found in session state.")
     is_token_valid = st.session_state["sp_oauth"].validate_token(st.session_state["token_info"])
-    st.write(f"DEBUG: Is token valid? {is_token_valid}")
     if is_token_valid:
-        st.write("DEBUG: Token is valid, initializing Spotify client.")
         st.session_state["sp"] = spotipy.Spotify(auth=st.session_state["token_info"]['access_token'])
     else:
-        st.write("DEBUG: Token invalid or expired, showing auth link.")
         auth_url = st.session_state["sp_oauth"].get_authorize_url()
-        st.write(f"DEBUG: Generated Auth URL: {auth_url}")
         st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
 else:
-    st.write("DEBUG: No token info in session, showing auth link.")
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
-    st.write(f"DEBUG: Generated Auth URL: {auth_url}")
     st.markdown(f"[Click here to Authenticate with Spotify]({auth_url})", unsafe_allow_html=True)
 
 
