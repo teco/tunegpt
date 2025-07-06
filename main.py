@@ -28,9 +28,6 @@ def parse_playlist(text):
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Plailista – AI Playlist Generator", page_icon="🎵", layout="centered")
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="Plailista – AI Playlist Generator", page_icon="🎵", layout="centered")
-
 # --- CUSTOM CSS FOR HEADER COLORS ---
 st.markdown(
     """
