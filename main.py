@@ -163,7 +163,7 @@ elif "token_info" in st.session_state:
             f"""
             <a href="{auth_url}" target="_blank" style="
                 display: inline-block;
-                background-color: #FF4B4B; /* Streamlit's default red button color */
+                background-color: #1DB954; /* Streamlit's default red button color */
                 color: white;
                 padding: 0.75rem 1rem;
                 border-radius: 0.25rem;
@@ -186,7 +186,7 @@ else:
         f"""
         <a href="{auth_url}" target="_blank" style="
             display: inline-block;
-            background-color: #FF4B4B; /* Streamlit's default red button color */
+            background-color: #1DB954; /* Streamlit's default red button color */
             color: white;
             padding: 0.75rem 1rem;
             border-radius: 0.25rem;
@@ -243,7 +243,7 @@ if st.button("➕ Create Playlist on Spotify"):
                         f"""
                         <a href="{auth_url}" target="_blank" style="
                             display: inline-block;
-                            background-color: #FF4B4B; /* Streamlit button red */
+                            background-color: #1DB954; /* Streamlit button red */
                             color: white;
                             padding: 0.75rem 1rem;
                             border-radius: 0.25rem;
