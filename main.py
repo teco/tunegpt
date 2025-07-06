@@ -120,24 +120,6 @@ playlist_input = st.text_area(
    # st.subheader("🔍 Parsed Playlist (Structured)")
    # st.json(st.session_state["parsed_playlist"]) 
 
-
-Okay, this is absolutely critical information: **"There's no revealing link when I click."**
-
-This means that `st.session_state["show_auth_link_main"]` is **not becoming `True` and persisting across the rerun**, or the `st.markdown` block is somehow being suppressed immediately. The page reload and the "refuses to connect" error happening *in the same tab* strongly suggests that your browser (Safari/Incognito) is interpreting the `st.button` click, followed by the Streamlit rerun, as an attempt to navigate the *current tab* directly to `accounts.spotify.com`, which Spotify's security policies then block.
-
-This is a very specific and challenging edge case in browser behavior with `st.button` for external redirects.
-
-Since `st.button` is not reliably triggering the desired new-tab behavior via `st.rerun` + `st.markdown`, we need to use the most reliable method possible: **make the "button" itself a direct HTML link.**
-
-We will effectively style an `<a>` tag to look exactly like a Streamlit button. This ensures that when you click what *looks* like a button, the browser is actually processing a direct `<a>` tag click, which is the most reliable way to open a new tab and bypass most browser-side interferences.
-
------
-
-**Here's the definitive solution for the "Authenticate with Spotify" button. Please replace the entire relevant section (where the `st.button("🔐 Authenticate with Spotify")` currently is) with this updated code.**
-
-**This change will simplify the authentication flow and remove the `show_auth_link_main` state management as it won't be needed.**
-
-```python
 # --- AUTH & PLAYLIST CREATION SECTION ---
 st.markdown("---")
 st.subheader("🔐 Connect & Create")
