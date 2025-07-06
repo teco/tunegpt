@@ -158,20 +158,34 @@ elif "token_info" in st.session_state:
     else:
         # Display the AUTHENTICATE BUTTON when token is invalid/expired
         auth_url = st.session_state["sp_oauth"].get_authorize_url()
+        # Initialize once
+        if "show_auth_link_main" not in st.session_state:
+            st.session_state["show_auth_link_main"] = False
+
         if st.button("🔐 Authenticate with Spotify"):
+            st.session_state["show_auth_link_main"] = True
+            st.rerun()
+
+        if st.session_state["show_auth_link_main"]:
             st.markdown(f"""
-                <meta http-equiv="refresh" content="0;URL='{auth_url}'" />
-                <p style='color: grey;'>Redirecting to Spotify for authentication...</p>
-                <p style='font-size: small; color: grey;'>If nothing happens, <a href="{auth_url}" target="_blank">click here to open manually</a>.</p>
+                <p>Please click <a href="{auth_url}" target="_blank">this link</a> to authenticate with Spotify in a new tab.</p>
+                <p style='font-size: small; color: grey;'>If nothing opens, check your popup blocker.</p>
             """, unsafe_allow_html=True)
 else:
     # Display the AUTHENTICATE BUTTON when no token info is present
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
+    # Initialize once
+    if "show_auth_link_main" not in st.session_state:
+        st.session_state["show_auth_link_main"] = False
+
     if st.button("🔐 Authenticate with Spotify"):
+        st.session_state["show_auth_link_main"] = True
+        st.rerun()
+
+    if st.session_state["show_auth_link_main"]:
         st.markdown(f"""
-            <meta http-equiv="refresh" content="0;URL='{auth_url}'" />
-            <p style='color: grey;'>Redirecting to Spotify for authentication...</p>
-            <p style='font-size: small; color: grey;'>If nothing happens, <a href="{auth_url}" target="_blank">click here to open manually</a>.</p>
+            <p>Please click <a href="{auth_url}" target="_blank">this link</a> to authenticate with Spotify in a new tab.</p>
+            <p style='font-size: small; color: grey;'>If nothing opens, check your popup blocker.</p>
         """, unsafe_allow_html=True)
 
 
@@ -215,12 +229,20 @@ if st.button("➕ Create Playlist on Spotify"):
                 # You might want to also re-display the auth button here if an error occurs
                 if "sp" not in st.session_state or st.session_state["sp"] is None:
                     auth_url = st.session_state["sp_oauth"].get_authorize_url()
+                    # Initialize once
+                    if "show_auth_link_main" not in st.session_state:
+                        st.session_state["show_auth_link_main"] = False
+
                     if st.button("🔐 Authenticate with Spotify"):
+                        st.session_state["show_auth_link_main"] = True
+                        st.rerun()
+
+                    if st.session_state["show_auth_link_main"]:
                         st.markdown(f"""
-                            <meta http-equiv="refresh" content="0;URL='{auth_url}'" />
-                            <p style='color: grey;'>Redirecting to Spotify for authentication...</p>
-                            <p style='font-size: small; color: grey;'>If nothing happens, <a href="{auth_url}" target="_blank">click here to open manually</a>.</p>
-                         """, unsafe_allow_html=True)
+                            <p>Please click <a href="{auth_url}" target="_blank">this link</a> to authenticate with Spotify in a new tab.</p>
+                            <p style='font-size: small; color: grey;'>If nothing opens, check your popup blocker.</p>
+                        """, unsafe_allow_html=True)
+
 
 
 # --- Authentication status message (re-added for clarity, replaces the final else block) ---
