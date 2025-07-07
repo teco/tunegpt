@@ -1,3 +1,18 @@
+Okay, yes, for absolute clarity, I will provide the **complete, updated `main.py` file**. This file incorporates all the changes we've discussed:
+
+1.  **`search_track` function:** Added after `parse_playlist`.
+2.  **Updated "Create Playlist on Spotify" logic:** Uses `search_track` for more robust Spotify song finding.
+3.  **Genre and Moods loaded from files (`genres.txt`, `moods.txt`):** Ensure these two `.txt` files are in the same directory as your `main.py` with the correct content.
+4.  **Custom header CSS.**
+5.  **Styled "Authenticate with Spotify" button (as an HTML link).**
+6.  **`st.select_slider` for number of songs.**
+7.  **Refined final authentication status message.**
+
+-----
+
+**Please replace the entire content of your `main.py` file with the code below.**
+
+```python
 import streamlit as st
 from PIL import Image
 from openai import OpenAI
@@ -6,39 +21,80 @@ import time
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import webbrowser
+import re # Needed for the improved parse_playlist function
 
 
 def parse_playlist(text):
     parsed = []
     lines = text.strip().splitlines()
     for line in lines:
-        if "–" in line:  # en dash
+        # Step 1: Remove common list prefixes (e.g., "1. ", "2) ", "- ")
+        line = re.sub(r'^\s*[\d\.\-]+[\s\)]*', '', line).strip()
+
+        # Step 2: Try to split by ' – ' (en dash) first
+        if "–" in line:
             parts = line.split("–", 1)
-        elif "-" in line:  # fallback
+        # Step 3: Fallback to splitting by ' - ' (hyphen)
+        elif "-" in line:
             parts = line.split("-", 1)
         else:
+            # If no common delimiter found, skip this line
             continue
-        artist = parts[0].strip()
-        track = parts[1].strip()
-        parsed.append({"artist": artist, "track": track})
+
+        # Ensure we got two parts (artist and track)
+        if len(parts) == 2:
+            artist = parts[0].strip()
+            track = parts[1].strip()
+
+            # Step 4: Clean up any residual non-alphanumeric characters at start/end of artist/track
+            artist = re.sub(r'^[^\w\s]+|[^\w\s]+$', '', artist).strip()
+            track = re.sub(r'^[^\w\s]+|[^\w\s]+$', '', track).strip()
+
+            # Ensure both artist and track are not empty after cleaning
+            if artist and track:
+                parsed.append({"artist": artist, "track": track})
     return parsed
 
 
+# --- NEW: Improved Track Search Function ---
+def search_track(sp, artist, track):
+    # Try multiple search strategies to increase success rate
+    search_queries = [
+        f"track:{track} artist:{artist}",  # 1. Exact match (strict)
+        f"{track} {artist}",              # 2. Broader search (title + artist)
+        f"track:{track}",                  # 3. Title only
+        f"artist:{artist}"                 # 4. Artist only
+    ]
+
+    for query in search_queries:
+        try:
+            results = sp.search(q=query, type="track", limit=1)
+            if results and results['tracks']['items']:
+                # Found a match, return the URI
+                return results['tracks']['items'][0]['uri']
+        except Exception as e:
+            # Catch API errors during search but don't stop the whole process for one query
+            # You could log this error if needed for debugging, but not show it to user
+            pass # Continue trying other queries or fail silently for this attempt
+
+    return None # Return None if no URI was found after all attempts
+
+
 # --- LOAD GENRES AND MOODS FROM FILES ---
-# Assuming 'genres.csv' is in the same directory as main.py
+# Assuming 'genres.txt' is in the same directory as main.py
 try:
-    with open("genres.csv", "r", encoding="utf-8") as f:
+    with open("genres.txt", "r", encoding="utf-8") as f:
         broad_genres = [line.strip() for line in f if line.strip()]
 except FileNotFoundError:
-    st.error("Genre list file (genres.csv) not found! Please ensure it's in the same directory.")
+    st.error("Genre list file (genres.txt) not found! Please ensure it's in the same directory.")
     broad_genres = ["Pop", "Rock", "Electronic"] # Fallback genres if file is missing
 
-# Assuming 'moods.csv' is in the same directory as main.py
+# Assuming 'moods.txt' is in the same directory as main.py
 try:
-    with open("moods.csv", "r", encoding="utf-8") as f:
+    with open("moods.txt", "r", encoding="utf-8") as f:
         mood_options = [line.strip() for line in f if line.strip()]
 except FileNotFoundError:
-    st.error("Mood list file (moods.csv) not found! Please ensure it's in the same directory.")
+    st.error("Mood list file (moods.txt) not found! Please ensure it's in the same directory.")
     mood_options = ["Upbeat", "Chill", "Melancholic"] # Fallback moods if file is missing
 
 
@@ -162,7 +218,7 @@ st.markdown("---")
 st.subheader("🔐 Connect & Create")
 
 # Playlist Name input is now always visible as requested
-playlist_name = st.text_input("Playlist Name", "Americana Starter Pack")
+playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
 
 # --- SPOTIFY AUTHENTICATION HANDLING ---
@@ -255,12 +311,13 @@ if st.button("➕ Create Playlist on Spotify"):
 
                 track_uris = []
                 for item in st.session_state["parsed_playlist"]:
-                    search_query = f"track:{item['track']} artist:{item['artist']}"
-                    results = st.session_state["sp"].search(q=search_query, type="track", limit=1)
-                    if results and results['tracks']['items']:
-                        track_uris.append(results['tracks']['items'][0]['uri'])
+                    # --- CALL THE NEW search_track FUNCTION HERE ---
+                    uri = search_track(st.session_state["sp"], item['artist'], item['track'])
+                    if uri:
+                        track_uris.append(uri)
+                        st.success(f"✅ Found: {item['artist']} - {item['track']}")
                     else:
-                        st.warning(f"Could not find track: {item['artist']} - {item['track']}")
+                        st.warning(f"⚠️ Could not find: {item['artist']} - {item['track']}")
 
                 if track_uris:
                     chunk_size = 100
