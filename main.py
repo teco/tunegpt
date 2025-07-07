@@ -66,20 +66,20 @@ def search_track(sp, artist, track):
 
 
 # --- LOAD GENRES AND MOODS FROM FILES ---
-# Assuming 'genres.txt' is in the same directory as main.py
+# Assuming 'genres.csv' is in the same directory as main.py
 try:
-    with open("genres.txt", "r", encoding="utf-8") as f:
+    with open("genres.csv", "r", encoding="utf-8") as f:
         broad_genres = [line.strip() for line in f if line.strip()]
 except FileNotFoundError:
-    st.error("Genre list file (genres.txt) not found! Please ensure it's in the same directory.")
+    st.error("Genre list file (genres.csv) not found! Please ensure it's in the same directory.")
     broad_genres = ["Pop", "Rock", "Electronic"] # Fallback genres if file is missing
 
-# Assuming 'moods.txt' is in the same directory as main.py
+# Assuming 'moods.csv' is in the same directory as main.py
 try:
-    with open("moods.txt", "r", encoding="utf-8") as f:
+    with open("moods.csv", "r", encoding="utf-8") as f:
         mood_options = [line.strip() for line in f if line.strip()]
 except FileNotFoundError:
-    st.error("Mood list file (moods.txt) not found! Please ensure it's in the same directory.")
+    st.error("Mood list file (moods.csv) not found! Please ensure it's in the same directory.")
     mood_options = ["Upbeat", "Chill", "Melancholic"] # Fallback moods if file is missing
 
 
