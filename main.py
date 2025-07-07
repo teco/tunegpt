@@ -203,7 +203,7 @@ st.markdown("---")
 st.subheader("🔐 Connect & Create")
 
 # Playlist Name input is now always visible as requested
-playlist_name = st.text_input("Playlist Name", "Americana Starter Pack")
+playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
 
 
 # --- SPOTIFY AUTHENTICATION HANDLING ---
@@ -294,89 +294,79 @@ if st.button("➕ Create Playlist on Spotify"):
                 playlist = st.session_state["sp"].user_playlist_create(user_id, playlist_name, public=True)
                 st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
 
-                track_uris = []
-                try:
-                    user = st.session_state["sp"].current_user()
-                    user_id = user['id']
-                    playlist = st.session_state["sp"].user_playlist_create(user_id, playlist_name, public=True)
-                    st.success(f"🎉 Playlist '{playlist_name}' created successfully!")
-
                 # --- Counters for found/not found songs ---
-                    found_count = 0
-                    not_found_count = 0
-                    track_uris = []
+                found_count = 0
+                not_found_count = 0
+                track_uris = []
 
-                    for item in st.session_state["parsed_playlist"]:
-                        # Use the search_track function
-                        uri = search_track(st.session_state["sp"], item['artist'], item['track'])
-                        if uri:
-                            track_uris.append(uri)
-                            found_count += 1
-                            # Removed the per-track st.success() message
-                        else:
-                            not_found_count += 1
-                            # Removed the per-track st.warning() message
-
-                    # --- Display summary messages ---
-                    if found_count > 0:
-                        st.success(f"✅ Found {found_count} out of {found_count + not_found_count} songs.")
-                    if not_found_count > 0:
-                        st.warning(f"⚠️ Could not find {not_found_count} songs. Please check your prompt or manual input for these tracks.")
-                
-                    # If no songs were found at all, we should warn before trying to add to playlist
-                    if found_count == 0 and not_found_count > 0: # All songs requested were not found
-                        st.warning("No songs were found to add to the playlist based on your request.")
-
-
-                    if track_uris:
-                        chunk_size = 100
-                        for i in range(0, len(track_uris), chunk_size):
-                            chunk = track_uris[i:i + chunk_size]
-                            st.session_state["sp"].playlist_add_items(playlist['id'], chunk)
-                        st.success(f"Added {len(track_uris)} songs to '{playlist_name}'!")
+                for item in st.session_state["parsed_playlist"]:
+                    # Use the search_track function
+                    uri = search_track(st.session_state["sp"], item['artist'], item['track'])
+                    if uri:
+                        track_uris.append(uri)
+                        found_count += 1
                     else:
-                        # This else branch handles the case where track_uris is empty even after processing (e.g., if found_count was 0)
-                        if found_count == 0: # Ensure this only shows if nothing was found
-                            st.warning("No songs were found to add to the playlist.")
+                        not_found_count += 1
 
-                except Exception as e:
-                    st.error(f"Error creating playlist: {e}. Please ensure you are authenticated with Spotify.")
-                    # This check ensures the auth button (as a styled link) appears if needed after an error
-                    if "sp" not in st.session_state or st.session_state["sp"] is None:
-                        auth_url = st.session_state["sp_oauth"].get_authorize_url()
-                        st.markdown(
-                            f"""
-                            <a href="{auth_url}" target="_blank" style="
-                                display: inline-block;
-                                background-color: #1DB954; /* Streamlit button red */
-                                color: white;
-                                padding: 0.75rem 1rem;
-                                border-radius: 0.25rem;
-                                text-decoration: none;
-                                font-weight: 600;
-                                cursor: pointer;
-                                border: none;
-                                line-height: 1.6;
-                                text-align: center;
-                            ">🔐 Authenticate with Spotify (after error)</a>
-                            """,
-                            unsafe_allow_html=True
-                        )
-                        st.info("Please complete authentication in the new tab.")
+                # --- Display summary messages ---
+                if found_count > 0:
+                    st.success(f"✅ Found {found_count} out of {found_count + not_found_count} songs.")
+                if not_found_count > 0:
+                    st.warning(f"⚠️ Could not find {not_found_count} songs. Please check your prompt or manual input for these tracks.")
+
+                # If no songs were found at all, we should warn before trying to add to playlist
+                if found_count == 0 and not_found_count > 0: # All songs requested were not found
+                    st.warning("No songs were found to add to the playlist based on your request.")
 
 
-   # --- Authentication status message (re-added for clarity) ---
-# This message will dynamically appear/disappear based on auth status
+                if track_uris:
+                    chunk_size = 100
+                    for i in range(0, len(track_uris), chunk_size):
+                        chunk = track_uris[i:i + chunk_size]
+                        st.session_state["sp"].playlist_add_items(playlist['id'], chunk)
+                    st.success(f"Added {len(track_uris)} songs to '{playlist_name}'!")
+                else:
+                    if found_count == 0: # Ensure this only shows if nothing was found
+                        st.warning("No songs were found to add to the playlist.")
+
+            except Exception as e:
+                st.error(f"Error creating playlist: {e}. Please ensure you are authenticated with Spotify.")
+                # This check ensures the auth button (as a styled link) appears if needed after an error
+                if "sp" not in st.session_state or st.session_state["sp"] is None:
+                    auth_url = st.session_state["sp_oauth"].get_authorize_url()
+                    st.markdown(
+                        f"""
+                        <a href="{auth_url}" target="_blank" style="
+                            display: inline-block;
+                            background-color: #1DB954; /* Streamlit button red */
+                            color: white;
+                            padding: 0.75rem 1rem;
+                            border-radius: 0.25rem;
+                            text-decoration: none;
+                            font-weight: 600;
+                            cursor: pointer;
+                            border: none;
+                            line-height: 1.6;
+                            text-align: center;
+                        ">🔐 Authenticate with Spotify (after error)</a>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    st.info("Please complete authentication in the new tab.")
+
+
+# --- Authentication status message (re-added for clarity) ---
+# This block should align directly with the 'CREATE PLAYLIST ON SPOTIFY BUTTON' block above it
 if "sp" in st.session_state and st.session_state["sp"] is not None:
     try:
         user_display_name = st.session_state["sp"].current_user()['display_name']
         st.success(f"🔐 Authenticated as {user_display_name}")
-    except Exception as e: # This 'except' should align with its 'try'
+    except Exception as e:
         st.error(f"Authentication session expired or invalid. Please re-authenticate: {e}")
         st.session_state["token_info"] = None
         st.session_state["sp"] = None
         st.rerun()
-else: # This 'else' should align with the 'if' it belongs to (the top-level 'if "sp" in st.session_state...')
+else:
     # This is the final authentication message at the bottom of the UI
     auth_url = st.session_state["sp_oauth"].get_authorize_url()
     st.info("Please authenticate with Spotify to fully utilize features.")
