@@ -105,7 +105,7 @@ with col1:
 
 with col2:
     artist = st.text_input("Anchor Artist", "Lucinda Williams")
-    num_songs = st.select_slider("Number of Songs", options=[10, 30, 50], value=25)
+    num_songs = st.select_slider("Number of Songs", options=[10, 30, 50], value=20)
 
 if st.button("Generate Playlist 🎶"):
     prompt = f"""
