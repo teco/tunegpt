@@ -365,21 +365,22 @@ if st.button("➕ Create Playlist on Spotify"):
                         st.info("Please complete authentication in the new tab.")
 
 
-    # --- Authentication status message (re-added for clarity) ---
+   # --- Authentication status message (re-added for clarity) ---
+# This message will dynamically appear/disappear based on auth status
 if "sp" in st.session_state and st.session_state["sp"] is not None:
     try:
         user_display_name = st.session_state["sp"].current_user()['display_name']
         st.success(f"🔐 Authenticated as {user_display_name}")
-        except Exception as e:
-            st.error(f"Authentication session expired or invalid. Please re-authenticate: {e}")
-            st.session_state["token_info"] = None
-            st.session_state["sp"] = None
-            st.rerun()
-    else:
-        # This is the final authentication message at the bottom of the UI
-        auth_url = st.session_state["sp_oauth"].get_authorize_url()
-        st.info("Please authenticate with Spotify to fully utilize features.")
-        st.markdown(f"""
-            <p>If you weren't automatically redirected, please click <a href="{auth_url}" target="_blank">Open Spotify</a> to authenticate directly.</p>
-            <p style='font-size: small; color: grey;'>This will open in a new tab.</p>
-        """, unsafe_allow_html=True)
+    except Exception as e: # This 'except' should align with its 'try'
+        st.error(f"Authentication session expired or invalid. Please re-authenticate: {e}")
+        st.session_state["token_info"] = None
+        st.session_state["sp"] = None
+        st.rerun()
+else: # This 'else' should align with the 'if' it belongs to (the top-level 'if "sp" in st.session_state...')
+    # This is the final authentication message at the bottom of the UI
+    auth_url = st.session_state["sp_oauth"].get_authorize_url()
+    st.info("Please authenticate with Spotify to fully utilize features.")
+    st.markdown(f"""
+        <p>If you weren't automatically redirected, please click <a href="{auth_url}" target="_blank">Open Spotify</a> to authenticate directly.</p>
+        <p style='font-size: small; color: grey;'>This will open in a new tab.</p>
+    """, unsafe_allow_html=True)
