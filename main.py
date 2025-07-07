@@ -203,7 +203,7 @@ st.markdown("---")
 st.subheader("🔐 Connect & Create")
 
 # Playlist Name input is now always visible as requested
-playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
+playlist_name = st.text_input("Playlist Name", "Americana Starter Pack")
 
 
 # --- SPOTIFY AUTHENTICATION HANDLING ---
