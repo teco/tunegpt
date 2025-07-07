@@ -1,18 +1,3 @@
-Okay, yes, for absolute clarity, I will provide the **complete, updated `main.py` file**. This file incorporates all the changes we've discussed:
-
-1.  **`search_track` function:** Added after `parse_playlist`.
-2.  **Updated "Create Playlist on Spotify" logic:** Uses `search_track` for more robust Spotify song finding.
-3.  **Genre and Moods loaded from files (`genres.txt`, `moods.txt`):** Ensure these two `.txt` files are in the same directory as your `main.py` with the correct content.
-4.  **Custom header CSS.**
-5.  **Styled "Authenticate with Spotify" button (as an HTML link).**
-6.  **`st.select_slider` for number of songs.**
-7.  **Refined final authentication status message.**
-
------
-
-**Please replace the entire content of your `main.py` file with the code below.**
-
-```python
 import streamlit as st
 from PIL import Image
 from openai import OpenAI
