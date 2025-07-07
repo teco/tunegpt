@@ -105,7 +105,7 @@ with col1:
 
 with col2:
     artist = st.text_input("Anchor Artist", "Lucinda Williams")
-    num_songs = st.slider("Number of Songs", 10, 30, 20)
+    num_songs = st.select_slider("Number of Songs", options=[10, 30, 50], value=25)
 
 if st.button("Generate Playlist 🎶"):
     prompt = f"""
@@ -162,7 +162,7 @@ st.markdown("---")
 st.subheader("🔐 Connect & Create")
 
 # Playlist Name input is now always visible as requested
-playlist_name = st.text_input("Playlist Name", "Outlaw Starter Pack")
+playlist_name = st.text_input("Playlist Name", "Americana Starter Pack")
 
 
 # --- SPOTIFY AUTHENTICATION HANDLING ---
